@@ -1,3 +1,4 @@
+
 // Dados globais
 let currentUser = null;
 let characters = [];
@@ -485,7 +486,8 @@ function handleLogin(event) {
     currentUser = user;
     localStorage.setItem('currentUserId', user.id);
     showToast(`Bem-vindo, ${username}!`);
-    window.location.href = "menu.html"; // Redireciona para menu.html
+    loadCharacters();
+    navigateTo(dashboardSection);
   } else {
     showToast('Usuário ou senha inválidos!', 'error');
   }

@@ -11,12 +11,17 @@
   <meta property="og:title" content="Reinos Indomáveis - Criador de Personagens" />
   <meta property="og:description" content="Crie e gerencie personagens para o mundo de Reinos Indomáveis" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@lovable_dev" />
+  <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-</head>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=dP-Rg-hQHjnsA6Q_Y9dzjyPkWUJL405QNBs2YlF0Gtgo1zIRRaJD81wSireVDAsqe5oIXTgS9Td-5zbNdTt5s3NXpyhaQjJ56V50Ro2LaLh9sn846sa_00U8bwCHzLjV8ARgUaz1mdp7WZQ9xuJ6ClzrJuZYLW21_Y25u1aUIdOodb-uYmaMDj44SUUSF1SUg4O8qVQizhTmgN7ZR5tO5yqPZLfngPd5dnklcFfv7gu5iSxGiJ2InXmcrKG3v5VBcX8H46_hcUV4JTi8nyZwuQ" charset="UTF-8"></script></head>
 <body>
   <div class="container">
     <header>
@@ -32,14 +37,14 @@
         </div>
         
         <div id="login-form" class="tab-content active">
-          <h3>Entrar</h3>
+          <h3 class="content">Entrar</h3>
           <form id="login-form-element">
             <div class="form-group">
-              <label for="login-username">Usuário:</label>
+              <label for="login-username" class="content">Usuário:</label>
               <input type="text" id="login-username" required>
             </div>
             <div class="form-group">
-              <label for="login-password">Senha:</label>
+              <label for="login-password" class = "content">Senha:</label>
               <input type="password" id="login-password" required>
             </div>
             <button type="submit" class="btn">Entrar</button>
@@ -47,14 +52,14 @@
         </div>
         
         <div id="register-form" class="tab-content">
-          <h3>Registrar</h3>
+          <h3 class="content">Registrar</h3>
           <form id="register-form-element">
             <div class="form-group">
-              <label for="register-username">Usuário:</label>
+              <label for="register-username" class="content">Usuário:</label>
               <input type="text" id="register-username" required>
             </div>
             <div class="form-group">
-              <label for="register-password">Senha:</label>
+              <label for="register-password" class="content">Senha:</label>
               <input type="password" id="register-password" required>
             </div>
             <button type="submit" class="btn">Registrar</button>
@@ -65,11 +70,11 @@
 
     <section id="dashboard-section" class="section hidden">
       <div class="user-menu">
-        <h3>Menu do Usuário</h3>
+        <h3 class="content">Menu do Usuário</h3>
         <div class="button-group">
           <button id="create-character-btn" class="btn btn-primary">Criar Personagem</button>
           <button id="list-characters-btn" class="btn btn-secondary">Listar Personagens</button>
-          <button id="logout-btn" class="btn btn-logout">Sair</button>
+          <button id="logout-btn" class="btn btn-secondary">Sair</button>
         </div>
       </div>
       
@@ -78,100 +83,103 @@
 
     <section id="create-character-section" class="section hidden">
       <h2 class="section-title">Criar Novo Personagem</h2>
+
+      <div class = "content">
+
+        <form id="character-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="character-name">Nome:</label>
+              <input type="text" id="character-name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="character-age">Idade:</label>
+              <input type="number" id="character-age" min="1" max="1000" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="character-race">Raça:</label>
+              <select id="character-race" required class ="content">
+                <option value="" disabled selected>Escolha uma raça</option>
+                <option value="Humano">Humano</option>
+                <option value="Elfo">Elfo</option>
+                <option value="Anão">Anão</option>
+                <option value="Orc">Orc</option>
+                <option value="Gato">Gato</option>
+                <option value="Lagarto">Lagarto</option>
+                <option value="Dragão">Dragão</option>
+                <option value="Cyborgue">Cyborgue</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="character-sex">Sexo:</label>
+              <select id="character-sex" class = "content" required>
+                <option value="" disabled selected>Escolha o sexo</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="character-class">Classe:</label>
+            <select id="character-class" class = "content" required>
+              <option value="" disabled selected>Escolha uma classe</option>
+              <option value="Heroi">Herói</option>
+              <option value="Bandido">Bandido</option>
+              <option value="Astrologo">Astrólogo</option>
+              <option value="Guerreiro">Guerreiro</option>
+              <option value="Prisioneiro">Prisioneiro</option>
+              <option value="Confessor">Confessor</option>
+              <option value="Miseravel">Miserável</option>
+              <option value="Vagabundo">Vagabundo</option>
+              <option value="Profeta">Profeta</option>
+              <option value="Samurai">Samurai</option>
+            </select>
+          </div>
+          
+          <div id="build-options" class="form-group hidden">
+            <h3 class="subtitle">Builds Disponíveis</h3>
+            <div id="build-description" class="build-description scroll-box"></div>
+            
+            <div class="form-group">
+              <label for="character-build">Escolha uma Build:</label>
+              <select id="character-build" class = "content" required>
+                <option value="" disabled selected>Selecione uma build</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="character-preview">
+            <h3 class="subtitle">Prévia do Personagem</h3>
+            <div id="character-stats" class="stats-grid"></div>
+          </div>
+        </div>
+          
+          <div class="form-actions">
+            <button type="button" id="back-btn" class="btn btn-secondary">Voltar</button>
+            <button type="submit" class="btn btn-primary">Criar Personagem</button>
+          </div>
+        </form>
+      </section>
       
-      <form id="character-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="character-name">Nome:</label>
-            <input type="text" id="character-name" required>
-          </div>
-          
-          <div class="form-group">
-            <label for="character-age">Idade:</label>
-            <input type="number" id="character-age" min="1" max="1000" required>
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="character-race">Raça:</label>
-            <select id="character-race" required>
-              <option value="" disabled selected>Escolha uma raça</option>
-              <option value="Humano">Humano</option>
-              <option value="Elfo">Elfo</option>
-              <option value="Anão">Anão</option>
-              <option value="Orc">Orc</option>
-              <option value="Gato">Gato</option>
-              <option value="Lagarto">Lagarto</option>
-              <option value="Dragão">Dragão</option>
-              <option value="Cyborgue">Cyborgue</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="character-sex">Sexo:</label>
-            <select id="character-sex" required>
-              <option value="" disabled selected>Escolha o sexo</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label for="character-class">Classe:</label>
-          <select id="character-class" required>
-            <option value="" disabled selected>Escolha uma classe</option>
-            <option value="Heroi">Herói</option>
-            <option value="Bandido">Bandido</option>
-            <option value="Astrologo">Astrólogo</option>
-            <option value="Guerreiro">Guerreiro</option>
-            <option value="Prisioneiro">Prisioneiro</option>
-            <option value="Confessor">Confessor</option>
-            <option value="Miseravel">Miserável</option>
-            <option value="Vagabundo">Vagabundo</option>
-            <option value="Profeta">Profeta</option>
-            <option value="Samurai">Samurai</option>
-          </select>
-        </div>
-        
-        <div id="build-options" class="form-group hidden">
-          <h3 class="subtitle">Builds Disponíveis</h3>
-          <div id="build-description" class="build-description scroll-box"></div>
-          
-          <div class="form-group">
-            <label for="character-build">Escolha uma Build:</label>
-            <select id="character-build" required>
-              <option value="" disabled selected>Selecione uma build</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="character-preview">
-          <h3 class="subtitle">Prévia do Personagem</h3>
-          <div id="character-stats" class="stats-grid"></div>
-        </div>
+      <section id="view-character-section" class="section hidden">
+        <h2 id="character-view-title" class="section-title">Detalhes do Personagem</h2>
+        <div id="character-details" class="character-details"></div>
         
         <div class="form-actions">
-          <button type="button" id="back-btn" class="btn btn-secondary">Voltar</button>
-          <button type="submit" class="btn btn-primary">Criar Personagem</button>
+          <button id="view-back-btn" class="btn btn-secondary">Voltar</button>
+          <button id="delete-character-btn" class="btn btn-danger">Excluir</button>
         </div>
-      </form>
-    </section>
-
-    <section id="view-character-section" class="section hidden">
-      <h2 id="character-view-title" class="section-title">Detalhes do Personagem</h2>
-      <div id="character-details" class="character-details"></div>
+      </section>
       
-      <div class="form-actions">
-        <button id="view-back-btn" class="btn btn-secondary">Voltar</button>
-        <button id="delete-character-btn" class="btn btn-danger">Excluir</button>
-      </div>
-    </section>
+      <div id="toast" class="toast hidden"></div>
+    </div>
     
-    <div id="toast" class="toast hidden"></div>
-  </div>
-
   <script src="script.js"></script>
 </body>
 </html>

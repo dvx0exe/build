@@ -1,0 +1,136 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Personagem - Reinos Indomáveis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="title">Reinos Indomáveis</h1>
+            <p class="subtitle">Criar Novo Personagem</p>
+        </header>
+        
+        <section id="create-character-section">
+            <form id="character-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="character-name">Nome:</label>
+                        <input type="text" id="character-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="character-age">Idade:</label>
+                        <input type="number" id="character-age" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="character-race">Raça:</label>
+                        <select id="character-race" required>
+                            <option value="">Escolha uma raça</option>
+                            <option value="Humano">Humano</option>
+                            <option value="Elfo">Elfo</option>
+                            <option value="Anão">Anão</option>
+                            <option value="Orc">Orc</option>
+                            <option value="Gato">Gato</option>
+                            <option value="Lagarto">Lagarto</option>
+                            <option value="Dragão">Dragão</option>
+                            <option value="Cyborgue">Cyborgue</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="character-sex">Sexo:</label>
+                        <select id="character-sex" required>
+                            <option value="">Escolha o sexo</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="character-class">Classe:</label>
+                    <select id="character-class" required>
+                        <option value="">Escolha uma classe</option>
+                        <option value="Heroi">Herói</option>
+                        <option value="Bandido">Bandido</option>
+                        <option value="Astrologo">Astrólogo</option>
+                        <option value="Guerreiro">Guerreiro</option>
+                        <option value="Prisioneiro">Prisioneiro</option>
+                        <option value="Confessor">Confessor</option>
+                        <option value="Miseravel">Miserável</option>
+                        <option value="Vagabundo">Vagabundo</option>
+                        <option value="Profeta">Profeta</option>
+                        <option value="Samurai">Samurai</option>
+                    </select>
+                </div>
+                
+                <div id="build-options" class="hidden">
+                    <h3>Builds Disponíveis</h3>
+                    <div class="build-description scroll-box" id="build-description"></div>
+                    <div class="form-group">
+                        <label for="character-build">Escolha uma Build:</label>
+                        <select id="character-build">
+                            <option value="">Selecione uma build</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="character-preview" class="character-preview hidden">
+                    <h3>Prévia do Personagem</h3>
+                    <div id="character-stats" class="stats-grid"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="back-btn" class="btn btn-secondary">Voltar</button>
+                    <button type="submit" class="btn btn-primary">Criar Personagem</button>
+                </div>
+            </form>
+        </section>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

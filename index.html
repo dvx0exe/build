@@ -27,18 +27,19 @@
     </header>
 
     <section id="auth-section" class="section">
-      <div class="auth-container">
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="login">Entrar</button>
-          <button class="tab-btn" data-tab="register">Registro</button>
-        </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="login">Entrar</button>
+        <button class="tab-btn" data-tab="register">Registro</button>
+        <button class="tab-btn" data-tab="verify">Verificar</button>
+      </div>
+
         
         <div id="login-form" class="tab-content active">
           <h3 class="content">Entrar</h3>
           <form id="login-form-element">
             <div class="form-group">
               <label for="login-username" class="content">Usuário:</label>
-              <input type="text" id="login-username" required>
+              <input type="email" id="login-email" required>
             </div>
             <div class="form-group">
               <label for="login-password" class = "content">Senha:</label>
@@ -53,7 +54,7 @@
           <form id="register-form-element">
             <div class="form-group">
               <label for="register-username" class="content">Usuário:</label>
-              <input type="text" id="register-username" required>
+              <input type="email" id="register-email" required>
             </div>
             <div class="form-group">
               <label for="register-password" class="content">Senha:</label>
@@ -64,6 +65,18 @@
         </div>
       </div>
     </section>
+
+        <div id="verify-form" class="tab-content">
+          <h3 class="content">Verificar Email</h3>
+          <form id="verification-form-element">
+            <div class="form-group">
+              <label for="verification-code" class="content">Código de Verificação:</label>
+              <input type="text" id="verification-code" required>
+              <small class="content">Verifique sua caixa de entrada e spam</small>
+            </div>
+            <button type="submit" class="btn">Verificar</button>
+          </form>
+        </div>
 
     <section id="dashboard-section" class="section hidden">
       <div class="user-menu">
@@ -180,3 +193,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+tabs

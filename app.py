@@ -2,17 +2,48 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
+import smtplib
+import random
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 
 app = Flask(__name__)
 CORS(app)
 
+# Configurações do Banco de Dados
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'davi123',  
+    'password': 'davi123',
     'database': 'personagens_bd'
 }
 
+# Configurações de Email (ATUALIZE COM SEUS DADOS)
+SMTP_SERVER = 'smtp.seuprovedor.com'
+SMTP_PORT = 587
+SMTP_USER = 'seuemail@dominio.com'
+SMTP_PASSWORD = 'suasenha'
+FROM_EMAIL = 'noreply@reinosindomaveis.com'
+
+# Dicionário temporário para códigos (em produção usar Redis)
+verification_codes = {}
+
+# Função para enviar emails
+def send_verification_email(email, code):
+    msg = MIMEText(f'Seu código de verificação é: {code}\n\nO código expira em 15 minutos.')
+    msg['Subject'] = 'Verificação de Email - Reinos Indomáveis'
+    msg['From'] = FROM_EMAIL
+    msg['To'] = email
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        print(f"Erro ao enviar email: {str(e)}")
+        return False
 class Personagem:
     def __init__(self, nome, idade, classe):
         self.__nome = nome
@@ -953,6 +984,7 @@ class BuildManager:
         
         return nome
     
+# Rotas da API
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -960,13 +992,61 @@ def index():
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.json
+    email = data['email']
+    senha = data['senha']
+
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO usuarios (login, senha) VALUES (%s, %s)", 
-                      (data['login'], data['senha']))
+        
+        # Verificar se email já existe
+        cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
+        if cursor.fetchone():
+            return jsonify({"success": False, "error": "Email já registrado"}), 400
+
+        # Gerar código de verificação
+        code = str(random.randint(100000, 999999))
+        verification_codes[email] = {
+            'code': code,
+            'expires': datetime.now() + timedelta(minutes=15)
+        }
+
+        # Enviar email
+        if not send_verification_email(email, code):
+            return jsonify({"success": False, "error": "Falha ao enviar email de verificação"}), 500
+
+        # Inserir usuário não verificado
+        cursor.execute("INSERT INTO usuarios (email, senha) VALUES (%s, %s)", (email, senha))
         conn.commit()
-        return jsonify({"success": True, "message": "Usuário registrado!"})
+        return jsonify({"success": True})
+
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)})
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.route('/api/verify', methods=['POST'])
+def verify_email():
+    data = request.json
+    email = data['email']
+    code = data['code']
+
+    # Verificar código no banco de dados
+    stored_code = verification_codes.get(email)
+    if not stored_code or stored_code['code'] != code:
+        return jsonify({"success": False, "error": "Código inválido ou expirado"}), 400
+
+    if datetime.now() > stored_code['expires']:
+        return jsonify({"success": False, "error": "Código expirado"}), 400
+
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE usuarios SET is_verified = TRUE WHERE email = %s", (email,))
+        conn.commit()
+        return jsonify({"success": True})
     except Error as err:
         return jsonify({"success": False, "error": str(err)})
     finally:
@@ -977,16 +1057,23 @@ def register():
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
+    email = data['email']
+    senha = data['senha']
+
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id, senha FROM usuarios WHERE login = %s", (data['login'],))
+        cursor.execute("SELECT id, senha, is_verified FROM usuarios WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if user and user['senha'] == data['senha']:
-            return jsonify({"success": True, "user_id": user['id']})
-        else:
-            return jsonify({"success": False, "error": "Credenciais inválidas"})
+        if not user or user['senha'] != senha:
+            return jsonify({"success": False, "error": "Credenciais inválidas"}), 401
+
+        if not user['is_verified']:
+            return jsonify({"success": False, "error": "Email não verificado"}), 403
+
+        return jsonify({"success": True, "user_id": user['id']})
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)})
     finally:

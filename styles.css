@@ -1,25 +1,23 @@
 
 /* Variáveis CSS */
-
-
 :root {
-  --background: #1f0a01;
+  --background: #0c0a09;
   --foreground: #f9f5eb;
-  --primary: #a88309;
-  --primary-dark: #615019;
-  --secondary: #271a14;
-  --secondary-light: #423229;
-  --muted: #16110f;
-  --muted-foreground: #493a30;
+  --primary: #fcd34d;
+  --primary-dark: #d4af37;
+  --secondary: #c2410c;
+  --secondary-light: #ea580c;
+  --muted: #292524;
+  --muted-foreground: #a8a29e;
   --card: #1c1917;
   --card-foreground: #f9f5eb;
   --border: #292524;
   --input: #292524;
   --radius: 0.5rem;
+  --font-medieval: 'MedievalSharp', cursive;
   --font-body: 'Roboto', sans-serif;
   --danger: #b91c1c;
   --danger-hover: #991b1b;
-  --font-medieval: 'MedievalSharp';
 }
 
 /* Estilos Gerais */
@@ -82,11 +80,6 @@ header {
 .subtitle {
   font-family: var(--font-medieval);
   font-size: 1.5rem;
-  color: var(--foreground);
-}
-.content {
-  font-family: var(--font-medieval);
-  font-size: 1rem;
   color: var(--foreground);
 }
 
@@ -557,5 +550,22 @@ input:focus, select:focus, textarea:focus {
   
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Adicionar na seção de tabs */
+.tab-btn[data-tab="verify"] {
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* Ajustar responsividade */
+@media (max-width: 480px) {
+  .tabs {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    border-radius: var(--radius) !important;
+    margin-bottom: 0.5rem;
   }
 }

@@ -468,57 +468,103 @@ function handleTabClick() {
       
       const tabId = this.getAttribute('data-tab');
       document.getElementById(`${tabId}-form`).classList.add('active');
+
+      // Limpar campos ao mudar de aba
+      if (tabId === 'login') {
+        document.getElementById('login-form-element').reset();
+      }
     });
   });
 }
 
-// Função de login
-function handleLogin(event) {
+document.getElementById('verification-form-element').addEventListener('submit', handleVerification);
+
+let pendingVerification = null;
+async function handleRegister(event) {
   event.preventDefault();
   
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
-  
-  const users = JSON.parse(localStorage.getItem('users') || '[]');
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  if (user) {
-    currentUser = user;
-    localStorage.setItem('currentUserId', user.id);
-    showToast(`Bem-vindo, ${username}!`);
-    loadCharacters();
-    navigateTo(dashboardSection);
-  } else {
-    showToast('Usuário ou senha inválidos!', 'error');
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
+
+  try {
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, senha: password })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      pendingVerification = { email, password };
+      showToast('Código de verificação enviado para seu email!');
+      document.querySelector('[data-tab="verify"]').click();
+    } else {
+      showToast(data.error || 'Erro no registro', 'error');
+    }
+  } catch (error) {
+    showToast('Erro de conexão', 'error');
   }
 }
 
-// Função de registro
-function handleRegister(event) {
+// Função de verificação de código
+async function handleVerification(event) {
   event.preventDefault();
   
-  const username = document.getElementById('register-username').value;
-  const password = document.getElementById('register-password').value;
-  
-  const users = JSON.parse(localStorage.getItem('users') || '[]');
-  
-  if (users.some(u => u.username === username)) {
-    showToast('Nome de usuário já existe!', 'error');
-    return;
+  const code = document.getElementById('verification-code').value;
+
+  try {
+    const response = await fetch('/api/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ 
+        email: pendingVerification.email,
+        code 
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      showToast('Email verificado com sucesso!');
+      pendingVerification = null;
+      document.querySelector('[data-tab="login"]').click();
+    } else {
+      showToast(data.error || 'Código inválido', 'error');
+    }
+  } catch (error) {
+    showToast('Erro de conexão', 'error');
   }
+}
+
+// Função de login modificada
+async function handleLogin(event) {
+  event.preventDefault();
   
-  const newUser = {
-    id: generateId(),
-    username,
-    password
-  };
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
   
-  users.push(newUser);
-  localStorage.setItem('users', JSON.stringify(users));
-  showToast('Registro concluído com sucesso!');
-  
-  document.getElementById('register-form-element').reset();
-  document.querySelector('[data-tab="login"]').click();
+  try {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, senha: password })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      currentUser = { id: data.user_id, email };
+      localStorage.setItem('currentUserId', data.user_id);
+      showToast(`Bem-vindo, ${email}!`);
+      loadCharacters();
+      navigateTo(dashboardSection);
+    } else {
+      showToast(data.error || 'Credenciais inválidas', 'error');
+    }
+  } catch (error) {
+    showToast('Erro de conexão', 'error');
+  }
 }
 
 // Função de logout
@@ -936,3 +982,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+handleTabClick

@@ -5,8 +5,11 @@ USE personagens_bd;
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    login VARCHAR(255) UNIQUE NOT NULL,
-    senha VARCHAR(255) NOT NULL
+    email VARCHAR(255) UNIQUE NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    verification_code VARCHAR(6),
+    is_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE personagens (

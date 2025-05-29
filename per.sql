@@ -27,5 +27,6 @@ CREATE TABLE personagens (
     arcano INT,
     build_escolhida VARCHAR(255),
     equipamento TEXT,
-    roupas TEXT
+    roupas TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );

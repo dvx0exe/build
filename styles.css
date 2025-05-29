@@ -734,11 +734,25 @@ input, select, textarea {
 }
 
 
+:root {
+  --elden-black: #0a0803;
+  --elden-dark: #1c1510;
+  --elden-brown: #2f261b;
+  --elden-gold: #e6c547;
+  --elden-gold-light: #f5d762;
+  --elden-gold-dark: #c9a832;
+  --elden-red: #9d1c1c;
 
-/* Estilo específico para selects na criação de personagem */
+  /* Novo tom de cinza para a barra */
+  --elden-gray: #3a3a3a;
+
+  /* Cor do texto */
+  --elden-text: #f2e6c9;
+}
+
 /* Estilo para selects na seção de criação de personagem */
 #create-character-section select {
-  background: var(--elden-gray) !important; /* Define o fundo como cinza sólido */
+  background: var(--elden-gray) !important; /* Fundo cinza sólido */
   color: var(--elden-gold) !important; /* Texto dourado para contraste */
   -webkit-appearance: none; /* Remove o estilo padrão do WebKit */
   -moz-appearance: none; /* Remove o estilo padrão do Firefox */
@@ -757,12 +771,12 @@ input, select, textarea {
 
 /* Estilo para inputs na seção de criação de personagem */
 #create-character-section input {
-  background: var(--elden-gray) !important; /* Define o fundo como cinza sólido */
+  background: var(--elden-gray) !important; /* Fundo cinza sólido */
   color: var(--elden-text); /* Cor do texto legível */
   border: 2px solid var(--elden-gray); /* Borda consistente */
   border-radius: 8px; /* Bordas arredondadas */
   padding: 1rem; /* Espaçamento interno */
   font-family: 'Almendra', serif; /* Fonte temática */
   font-size: 1rem; /* Tamanho da fonte */
-  width: 100%; /* Largura total */
+  width: 100%; /* Largura total */
 }

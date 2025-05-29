@@ -298,7 +298,6 @@ const createCharacterSection = document.getElementById('create-character-section
 const viewCharacterSection = document.getElementById('view-character-section');
 const charactersList = document.getElementById('characters-list');
 const buildOptions = document.getElementById('build-options');
-const buildDescription = document.getElementById('build-description');
 const buildButtonsContainer = document.getElementById('build-buttons');
 const characterStats = document.getElementById('character-stats');
 const characterDetails = document.getElementById('character-details');
@@ -316,11 +315,9 @@ function showToast(message, type = 'success') {
 
 // Função para navegar entre seções
 function navigateTo(section) {
-    // Esconde todas as seções
     [authSection, dashboardSection, createCharacterSection, viewCharacterSection].forEach(s => {
         s.classList.add('hidden');
     });
-    // Exibe a seção desejada
     section.classList.remove('hidden');
 }
 
@@ -329,11 +326,6 @@ function clearElement(element) {
     while (element.firstChild) {
         element.removeChild(element.firstChild);
     }
-}
-
-// Função para gerar IDs únicos
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
 // Função para calcular modificador do atributo
@@ -380,50 +372,61 @@ function handleTabClick() {
 }
 
 // Função de login
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.username === username && u.password === password);
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
 
-    if (user) {
-        currentUser = user;
-        localStorage.setItem('currentUserId', user.id);
-        showToast(`Bem-vindo, ${username}!`);
-        loadCharacters();
-        navigateTo(dashboardSection);
-    } else {
-        showToast('Usuário ou senha inválidos!', 'error');
+        const data = await response.json();
+        if (response.ok) {
+            currentUser = { id: data.user_id, username };
+            localStorage.setItem('currentUserId', currentUser.id);
+            showToast(`Bem-vindo, ${username}!`);
+            await loadCharacters();
+            navigateTo(dashboardSection);
+        } else {
+            showToast(data.message || 'Usuário ou senha inválidos!', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao fazer login!', 'error');
     }
 }
 
 // Função de registro
-function handleRegister(event) {
+async function handleRegister(event) {
     event.preventDefault();
     const username = document.getElementById('register-username').value;
     const password = document.getElementById('register-password').value;
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
 
-    if (users.some(u => u.username === username)) {
-        showToast('Nome de usuário já existe!', 'error');
-        return;
+        const data = await response.json();
+        if (response.ok) {
+            showToast('Registro concluído com sucesso!');
+            document.getElementById('register-form-element').reset();
+            document.querySelector('[data-tab="login"]').click();
+        } else {
+            showToast(data.message || 'Nome de usuário já existe!', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao registrar!', 'error');
     }
-
-    const newUser = {
-        id: generateId(),
-        username,
-        password
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-
-    showToast('Registro concluído com sucesso!');
-    document.getElementById('register-form-element').reset();
-    document.querySelector('[data-tab="login"]').click();
 }
 
 // Função de logout
@@ -435,157 +438,131 @@ function handleLogout() {
 }
 
 // Carrega personagens do usuário atual
-function loadCharacters() {
+async function loadCharacters() {
     if (!currentUser) return;
 
     clearElement(charactersList);
-    const allCharacters = JSON.parse(localStorage.getItem('characters') || '[]');
-    characters = allCharacters.filter(char => char.userId === currentUser.id);
+    try {
+        const response = await fetch(`/api/characters?user_id=${currentUser.id}`);
+        if (response.ok) {
+            characters = await response.json();
+            if (characters.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-characters';
+                emptyMessage.innerHTML = `
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll-text" style="margin: 0 auto; color: #fcd34d50; margin-bottom: 1rem;">
+                            <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"></path>
+                            <path d="M19 17V5a2 2 0 0 0-2-2H4"></path>
+                            <path d="M15 8h-5"></path>
+                            <path d="M15 12h-5"></path>
+                        </svg>
+                        <p class="text-lg">Você ainda não tem personagens</p>
+                        <p class="text-sm" style="opacity: 0.7; margin-top: 0.5rem;">Crie seu primeiro personagem para começar sua aventura</p>
+                    </div>
+                `;
+                charactersList.appendChild(emptyMessage);
+                return;
+            }
 
-    if (characters.length === 0) {
-        const emptyMessage = document.createElement('div');
-        emptyMessage.className = 'empty-characters';
-        emptyMessage.innerHTML = `
-            <div>
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll-text" style="margin: 0 auto; color: #fcd34d50; margin-bottom: 1rem;">
-                    <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"></path>
-                    <path d="M19 17V5a2 2 0 0 0-2-2H4"></path>
-                    <path d="M15 8h-5"></path>
-                    <path d="M15 12h-5"></path>
-                </svg>
-                <p class="text-lg">Você ainda não tem personagens</p>
-                <p class="text-sm" style="opacity: 0.7; margin-top: 0.5rem;">Crie seu primeiro personagem para começar sua aventura</p>
-            </div>
-        `;
-        charactersList.appendChild(emptyMessage);
-        return;
+            characters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                card.innerHTML = `
+                    <h3>${char.nome}</h3>
+                    <div class="character-info">
+                        <span>Classe:</span> ${char.classe}
+                    </div>
+                    <div class="character-info">
+                        <span>Raça:</span> ${char.raca}
+                    </div>
+                    <div class="character-info">
+                        <span>Idade:</span> ${char.idade}
+                    </div>
+                    ${char.build_escolhida ? `<div class="character-info"><span>Build:</span> ${char.build_escolhida}</div>` : ''}
+                    ${char.equipamento && char.equipamento.length > 0 ? `<div class="character-extra">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sword" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                            <polyline points="14.5 17.5 3 6 6 3 17.5 14.5"></polyline>
+                            <line x1="13" y1="19" x2="19" y2="13"></line>
+                            <line x1="16" y1="16" x2="20" y2="20"></line>
+                            <line x1="19" y1="21" x2="21" y2="19"></line>
+                        </svg>
+                        ${char.equipamento.slice(0, 2).join(', ')}${char.equipamento.length > 2 ? '...' : ''}
+                    </div>` : ''}
+                    <div class="character-extra" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            ${new Date().toLocaleDateString()}
+                        </div>
+                        <span class="character-badge">Nível 1</span>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    viewCharacter(char.id);
+                });
+
+                charactersList.appendChild(card);
+            });
+        } else {
+            showToast('Erro ao carregar personagens!', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao carregar personagens!', 'error');
     }
-
-    characters.forEach(char => {
-        const card = document.createElement('div');
-        card.className = 'character-card';
-        card.innerHTML = `
-            <h3>${char.name}</h3>
-            <div class="character-info">
-                <span>Classe:</span> ${char.class}
-            </div>
-            <div class="character-info">
-                <span>Raça:</span> ${char.race}
-            </div>
-            <div class="character-info">
-                <span>Idade:</span> ${char.age}
-            </div>
-            ${char.build ? `<div class="character-info"><span>Build:</span> ${char.build}</div>` : ''}
-            ${char.equipment && char.equipment.length > 0 ? `<div class="character-extra">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sword" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
-                    <polyline points="14.5 17.5 3 6 6 3 17.5 14.5"></polyline>
-                    <line x1="13" y1="19" x2="19" y2="13"></line>
-                    <line x1="16" y1="16" x2="20" y2="20"></line>
-                    <line x1="19" y1="21" x2="21" y2="19"></line>
-                </svg>
-                ${char.equipment.slice(0, 2).join(', ')}${char.equipment.length > 2 ? '...' : ''}
-            </div>` : ''}
-            <div class="character-extra" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
-                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    ${new Date(char.createdAt).toLocaleDateString()}
-                </div>
-                <span class="character-badge">Nível 1</span>
-            </div>
-        `;
-
-        card.addEventListener('click', () => {
-            viewCharacter(char.id);
-        });
-
-        charactersList.appendChild(card);
-    });
 }
 
 // Gerencia mudança de classe do personagem
 function handleClassChange() {
     const selectedClass = document.getElementById('character-class').value;
-    
     clearElement(buildButtonsContainer);
     document.getElementById('character-build').value = '';
 
     if (selectedClass && classBuilds[selectedClass]) {
         buildOptions.classList.remove('hidden');
 
-        // Limpar descrição anterior
-        clearElement(buildDescription);
-
-        // Criar container para descrições formatadas
-        const buildsListContainer = document.createElement('div');
-        buildsListContainer.className = 'builds-list-container';
-        
         classBuilds[selectedClass].forEach((build, index) => {
-            // Criar botão para build
-            const buildBtn = document.createElement('div');
-            buildBtn.className = 'build-btn';
+            const buildBtn = document.createElement('button');
+            buildBtn.className = 'btn build-btn';
             buildBtn.dataset.buildIndex = index;
-            
-            const statsText = Object.entries(build.statChanges)
-                .map(([stat, value]) => `${statNameToDisplay(stat)} +${value}`)
-                .join(', ');
-            
-            const equipmentText = build.equipment ? build.equipment.join(', ') : '';
-            
-            buildBtn.innerHTML = `
-                <div class="build-btn-title">${build.name}</div>
-                <div class="build-btn-description">${build.description}</div>
-                <div class="build-btn-stats">
-                    ${Object.entries(build.statChanges).map(([stat, value]) => 
-                        `<span class="build-stat-tag">${statNameToDisplay(stat)} +${value}</span>`
-                    ).join('')}
-                </div>
-                ${equipmentText ? `<div class="build-btn-equipment">${equipmentText}</div>` : ''}
+
+            const btnContent = document.createElement('div');
+            btnContent.className = 'build-btn-content';
+
+            const btnTitle = document.createElement('span');
+            btnTitle.className = 'build-btn-title';
+            btnTitle.textContent = build.name;
+
+            const descContent = document.createElement('div');
+            descContent.className = 'build-btn-description';
+            descContent.innerHTML = `
+                <div><strong>Descrição:</strong> ${build.description}</div>
+                <div><strong>Atributos recomendados:</strong> ${Object.entries(build.statChanges).map(([stat, value]) => `${statNameToDisplay(stat)} +${value}`).join(', ')}</div>
+                ${build.equipment && build.equipment.length ? `<div><strong>Equipamentos:</strong> ${build.equipment.join(', ')}</div>` : ''}
+                ${build.clothes && build.clothes.length ? `<div><strong>Roupas:</strong> ${build.clothes.join(', ')}</div>` : ''}
             `;
-            
+
+            btnContent.appendChild(btnTitle);
+            btnContent.appendChild(descContent);
+            buildBtn.appendChild(btnContent);
+
             buildBtn.addEventListener('click', () => {
-                // Remove seleção anterior
                 document.querySelectorAll('.build-btn').forEach(btn => {
                     btn.classList.remove('selected');
                 });
-                // Adiciona seleção atual
                 buildBtn.classList.add('selected');
-                // Atualiza campo hidden
                 document.getElementById('character-build').value = index;
-                // Atualiza preview
                 updateCharacterPreview(selectedClass, index);
             });
-            
-            buildButtonsContainer.appendChild(buildBtn);
 
-            // Adiciona a descrição textual formatada ao container
-            const buildDescItem = document.createElement('div');
-            buildDescItem.className = 'build-description-item';
-            buildDescItem.innerHTML = `
-                <div class="build-desc-header">
-                    <span class="build-number">${index + 1}</span>
-                    <span class="build-name">${build.name}</span>
-                </div>
-                <div class="build-desc-content">
-                    <div><strong>Descrição:</strong> ${build.description}</div>
-                    <div><strong>Atributos recomendados:</strong> ${statsText}</div>
-                    ${build.equipment && build.equipment.length ? 
-                        `<div><strong>Equipamentos:</strong> ${build.equipment.join(', ')}</div>` : ''}
-                    ${build.clothes && build.clothes.length ? 
-                        `<div><strong>Roupas:</strong> ${build.clothes.join(', ')}</div>` : ''}
-                </div>
-                <div class="build-desc-separator"></div>
-            `;
-            buildsListContainer.appendChild(buildDescItem);
+            buildButtonsContainer.appendChild(buildBtn);
         });
 
-        // Adiciona todas as descrições ao elemento buildDescription
-        buildDescription.appendChild(buildsListContainer);
-        
         updateCharacterPreview(selectedClass);
     } else {
         buildOptions.classList.add('hidden');
@@ -604,7 +581,7 @@ function updateCharacterPreview(characterClass, buildIndex = null) {
     if (buildIndex !== null && classBuilds[characterClass][buildIndex]) {
         const build = classBuilds[characterClass][buildIndex];
         Object.entries(build.statChanges).forEach(([stat, value]) => {
-            baseStats[stat] = value;
+            baseStats[stat] = (baseStats[stat] || 0) + value;
         });
     }
 
@@ -632,7 +609,7 @@ function updateCharacterPreview(characterClass, buildIndex = null) {
 }
 
 // Gerencia envio do formulário de criação de personagem
-function handleCharacterFormSubmit(event) {
+async function handleCharacterFormSubmit(event) {
     event.preventDefault();
 
     if (!currentUser) {
@@ -647,168 +624,165 @@ function handleCharacterFormSubmit(event) {
     const characterClass = document.getElementById('character-class').value;
     const buildIndex = document.getElementById('character-build').value;
 
+    if (!name || !age || !race || !sex || !characterClass) {
+        showToast('Por favor, preencha todos os campos!', 'error');
+        return;
+    }
+
     const character = {
-        id: generateId(),
-        userId: currentUser.id,
-        name,
-        age,
-        race,
-        sex,
-        class: characterClass,
-        stats: { ...characterClasses[characterClass].baseStats },
-        equipment: [...characterClasses[characterClass].equipment],
-        clothes: [...characterClasses[characterClass].clothes],
-        build: '',
-        createdAt: new Date().toISOString()
+        user_id: currentUser.id,
+        nome: name,
+        idade: parseInt(age),
+        classe: characterClass,
+        raca: race,
+        sexo: sex,
+        ...characterClasses[characterClass].baseStats,
+        equipamento: characterClasses[characterClass].equipment,
+        roupas: characterClasses[characterClass].clothes,
+        build_escolhida: ''
     };
 
     if (buildIndex !== '') {
         const buildData = classBuilds[characterClass][parseInt(buildIndex)];
-        character.build = buildData.name;
+        character.build_escolhida = buildData.name;
         Object.entries(buildData.statChanges).forEach(([stat, value]) => {
-            character.stats[stat] = value;
+            character[stat] = (character[stat] || 0) + value;
         });
         if (buildData.equipment) {
-            character.equipment.push(...buildData.equipment);
+            character.equipamento = [...character.equipamento, ...buildData.equipment];
         }
         if (buildData.clothes) {
-            character.clothes.push(...buildData.clothes);
+            character.roupas = [...character.roupas, ...buildData.clothes];
         }
     }
 
-    const allCharacters = JSON.parse(localStorage.getItem('characters') || '[]');
-    allCharacters.push(character);
-    localStorage.setItem('characters', JSON.stringify(allCharacters));
+    try {
+        const response = await fetch('/api/characters', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(character)
+        });
 
-    showToast('Personagem criado com sucesso!');
-    document.getElementById('character-form').reset();
-    clearElement(buildButtonsContainer);
-    buildOptions.classList.add('hidden');
-    loadCharacters();
-    navigateTo(dashboardSection);
+        if (response.ok) {
+            showToast('Personagem criado com sucesso!');
+            document.getElementById('character-form').reset();
+            clearElement(buildButtonsContainer);
+            buildOptions.classList.add('hidden');
+            await loadCharacters();
+            navigateTo(dashboardSection);
+        } else {
+            const data = await response.json();
+            showToast(data.message || 'Erro ao criar personagem!', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao criar personagem!', 'error');
+    }
 }
 
 // Função para visualizar detalhes do personagem
-function viewCharacter(id) {
+async function viewCharacter(id) {
     selectedCharacterId = id;
-    const character = characters.find(char => char.id === id);
-    
-    if (!character) {
-        showToast('Personagem não encontrado!', 'error');
-        return;
-    }
+    try {
+        const response = await fetch(`/api/characters/${id}`);
+        if (!response.ok) {
+            showToast('Personagem não encontrado!', 'error');
+            return;
+        }
+        const character = await response.json();
 
-    document.getElementById('character-view-title').textContent = `${character.name}`;
-    clearElement(characterDetails);
+        document.getElementById('character-view-title').textContent = `${character.nome}`;
+        clearElement(characterDetails);
 
-    // Informações Básicas
-    const basicInfo = document.createElement('div');
-    basicInfo.className = 'detail-group';
-    basicInfo.innerHTML = `
-        <h4>Informações Básicas</h4>
-        <div class="detail-grid">
-            <div class="detail-item"><span class="detail-label">Classe:</span> ${character.class}</div>
-            <div class="detail-item"><span class="detail-label">Raça:</span> ${character.race}</div>
-            <div class="detail-item"><span class="detail-label">Sexo:</span> ${character.sex}</div>
-            <div class="detail-item"><span class="detail-label">Idade:</span> ${character.age}</div>
-            ${character.build ? `<div class="detail-item"><span class="detail-label">Build:</span> ${character.build}</div>` : ''}
-        </div>
-    `;
-    characterDetails.appendChild(basicInfo);
-
-    // Estatísticas
-    const stats = document.createElement('div');
-    stats.className = 'detail-group';
-    stats.innerHTML = '<h4>Atributos</h4>';
-    const statsGrid = document.createElement('div');
-    statsGrid.className = 'stats-grid';
-
-    Object.entries(character.stats).forEach(([stat, value]) => {
-        const statBox = document.createElement('div');
-        statBox.className = 'stat-box';
-
-        const statName = document.createElement('span');
-        statName.className = 'stat-name';
-        statName.textContent = statNameToDisplay(stat);
-
-        const statValue = document.createElement('span');
-        statValue.className = 'stat-value';
-        statValue.textContent = value;
-
-        const statMod = document.createElement('span');
-        statMod.className = 'stat-modifier';
-        statMod.textContent = formatModifier(calculateModifier(value));
-
-        statBox.appendChild(statName);
-        statBox.appendChild(statValue);
-        statBox.appendChild(statMod);
-        statsGrid.appendChild(statBox);
-    });
-
-    stats.appendChild(statsGrid);
-    characterDetails.appendChild(stats);
-
-    // Equipamentos
-    if (character.equipment && character.equipment.length) {
-        const equipment = document.createElement('div');
-        equipment.className = 'detail-group';
-        equipment.innerHTML = `
-            <h4>Equipamento</h4>
+        // Informações Básicas
+        const basicInfo = document.createElement('div');
+        basicInfo.className = 'detail-group';
+        basicInfo.innerHTML = `
+            <h4>Informações Básicas</h4>
             <div class="detail-grid">
-                ${character.equipment.map(item => `<div class="detail-item">${item}</div>`).join('')}
+                <div class="detail-item">Classe: ${character.classe}</div>
+                <div class="detail-item">Raça: ${character.raca}</div>
+                <div class="detail-item">Sexo: ${character.sexo}</div>
+                <div class="detail-item">Idade: ${character.idade}</div>
+                ${character.build_escolhida ? `<div class="detail-item">Build: ${character.build_escolhida}</div>` : ''}
             </div>
         `;
-        characterDetails.appendChild(equipment);
+        characterDetails.appendChild(basicInfo);
+
+        // Estatísticas
+        const stats = document.createElement('div');
+        stats.className = 'detail-group';
+        stats.innerHTML = '<h4>Atributos</h4>';
+        const statsGrid = document.createElement('div');
+        statsGrid.className = 'stats-grid';
+
+        const statFields = ['vigor', 'mente', 'fortitude', 'forca', 'destreza', 'inteligencia', 'fe', 'arcano'];
+        statFields.forEach(stat => {
+            const statBox = document.createElement('div');
+            statBox.className = 'stat-box';
+
+            const statName = document.createElement('span');
+            statName.className = 'stat-name';
+            statName.textContent = statNameToDisplay(stat);
+
+            const statValue = document.createElement('span');
+            statValue.className = 'stat-value';
+            statValue.textContent = character[stat];
+
+            const statMod = document.createElement('span');
+            statMod.className = 'stat-modifier';
+            statMod.textContent = formatModifier(calculateModifier(character[stat]));
+
+            statBox.appendChild(statName);
+            statBox.appendChild(statValue);
+            statBox.appendChild(statMod);
+            statsGrid.appendChild(statBox);
+        });
+
+        stats.appendChild(statsGrid);
+        characterDetails.appendChild(stats);
+
+        // Equipamentos
+        if (character.equipamento && character.equipamento.length) {
+            const equipment = document.createElement('div');
+            equipment.className = 'detail-group';
+            equipment.innerHTML = `
+                <h4>Equipamento</h4>
+                <div class="detail-grid">
+                    ${character.equipamento.map(item => `<div class="detail-item">${item}</div>`).join('')}
+                </div>
+            `;
+            characterDetails.appendChild(equipment);
+        }
+
+        // Roupas
+        if (character.roupas && character.roupas.length) {
+            const clothes = document.createElement('div');
+            clothes.className = 'detail-group';
+            clothes.innerHTML = `
+                <h4>Vestimentas</h4>
+                <div class="detail-grid">
+                    ${character.roupas.map(item => `<div class="detail-item">${item}</div>`).join('')}
+                </div>
+            `;
+            characterDetails.appendChild(clothes);
+        }
+
+        navigateTo(viewCharacterSection);
+    } catch (error) {
+        showToast('Erro ao visualizar personagem!', 'error');
     }
-
-    // Roupas
-    if (character.clothes && character.clothes.length) {
-        const clothes = document.createElement('div');
-        clothes.className = 'detail-group';
-        clothes.innerHTML = `
-            <h4>Vestimentas</h4>
-            <div class="detail-grid">
-                ${character.clothes.map(item => `<div class="detail-item">${item}</div>`).join('')}
-            </div>
-        `;
-        characterDetails.appendChild(clothes);
-    }
-
-    // Data de criação
-    const creationDate = document.createElement('div');
-    creationDate.className = 'detail-group';
-    creationDate.innerHTML = `
-        <div style="color: var(--muted-foreground); font-size: 0.875rem; display: flex; align-items: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll" style="margin-right: 0.5rem;">
-                <path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"></path>
-                <path d="M19 17V5a2 2 0 0 0-2-2H4"></path>
-            </svg>
-            Criado em: ${new Date(character.createdAt).toLocaleString()}
-        </div>
-    `;
-    characterDetails.appendChild(creationDate);
-
-    navigateTo(viewCharacterSection);
 }
 
 // Função para excluir personagem
-function handleDeleteCharacter() {
-    if (!selectedCharacterId) return;
-
-    if (confirm('Tem certeza de que deseja excluir este personagem? Esta ação não pode ser desfeita.')) {
-        const allCharacters = JSON.parse(localStorage.getItem('characters') || '[]');
-        const updatedCharacters = allCharacters.filter(char => char.id !== selectedCharacterId);
-        localStorage.setItem('characters', JSON.stringify(updatedCharacters));
-
-        showToast('Personagem excluído com sucesso!');
-        loadCharacters();
-        navigateTo(dashboardSection);
-        selectedCharacterId = null;
-    }
+async function handleDeleteCharacter() {
+    const modal = document.getElementById('delete-modal');
+    modal.classList.remove('hidden');
 }
 
 // Inicialização quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     handleTabClick();
 
     document.getElementById('login-form-element').addEventListener('submit', handleLogin);
@@ -816,11 +790,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('create-character-btn').addEventListener('click', () => {
         navigateTo(createCharacterSection);
-    });
-
-    document.getElementById('list-characters-btn').addEventListener('click', () => {
-        loadCharacters();
-        navigateTo(dashboardSection);
     });
 
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
@@ -839,15 +808,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('delete-character-btn').addEventListener('click', handleDeleteCharacter);
 
+    document.getElementById('modal-cancel').addEventListener('click', () => {
+        document.getElementById('delete-modal').classList.add('hidden');
+    });
+
+    document.getElementById('modal-confirm').addEventListener('click', async () => {
+        try {
+            const response = await fetch(`/api/characters/${selectedCharacterId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                showToast('Personagem excluído com sucesso!');
+                document.getElementById('delete-modal').classList.add('hidden');
+                await loadCharacters();
+                navigateTo(dashboardSection);
+                selectedCharacterId = null;
+            } else {
+                const data = await response.json();
+                showToast(data.message || 'Erro ao excluir personagem!', 'error');
+            }
+        } catch (error) {
+            showToast('Erro ao excluir personagem!', 'error');
+        }
+    });
+
     // Verificar se há um usuário logado
     const storedUserId = localStorage.getItem('currentUserId');
     if (storedUserId) {
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(u => u.id === storedUserId);
-        if (user) {
-            currentUser = user;
-            loadCharacters();
-            navigateTo(dashboardSection);
+        try {
+            const response = await fetch(`/api/users/${storedUserId}`);
+            if (response.ok) {
+                const user = await response.json();
+                currentUser = { id: user.id, username: user.login };
+                await loadCharacters();
+                navigateTo(dashboardSection);
+            } else {
+                localStorage.removeItem('currentUserId');
+            }
+        } catch (error) {
+            localStorage.removeItem('currentUserId');
         }
     }
 });

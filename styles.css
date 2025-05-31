@@ -1,0 +1,535 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Importação das fontes */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700&family=Almendra:wght@400;700&display=stylesheet');
+
+/* Variáveis do tema Elden Ring */
+:root {
+  --elden-black: #0a0803;
+  --elden-dark: #1c1510;
+  --elden-brown: #2f261b;
+  --elden-gold: #e6c547;
+  --elden-gold-light: #f5d762;
+  --elden-gold-dark: #c9a832;
+  --elden-red: #9d1c1c;
+  --elden-gray: #3a3a3a;
+  --elden-text: #f2e6c9;
+  --elden-shadow: rgba(0, 0, 0, 0.8);
+}
+
+/* Estilo base do body */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+  background: var(--elden-black);
+  color: var(--elden-text);
+  font-family: 'Cinzel', serif;
+  line-height: 1.6;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(230, 197, 71, 0.08) 0%, transparent 35%),
+    radial-gradient(circle at 80% 70%, rgba(157, 28, 28, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(47, 38, 27, 0.4) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Container principal */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+}
+
+/* Títulos */
+.title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 4.5rem;
+  font-weight: 700;
+  color: var(--elden-gold);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  animation: glow-pulse 3s ease-in-out infinite;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.title::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--elden-gold), transparent);
+  filter: blur(1px);
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--elden-gold-dark), transparent);
+  filter: blur(1px);
+}
+
+.subtitle {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--elden-text);
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px var(--elden-shadow);
+  letter-spacing: 2px;
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Seções */
+.section {
+  background: linear-gradient(135deg, var(--elden-dark) 0%, var(--elden-brown) 100%);
+  border: 2px solid var(--elden-gold-dark);
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 0 20px rgba(230, 197, 71, 0.3),
+    inset 0 1px 0 rgba(230, 197, 71, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--elden-gold) 20%, 
+    var(--elden-gold-light) 50%, 
+    var(--elden-gold) 80%, 
+    transparent 100%);
+}
+
+/* Inputs e formulários */
+input, select {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--elden-gray);
+  border: 2px solid var(--elden-gray);
+  color: var(--elden-text);
+  border-radius: 8px;
+  font-family: 'Almendra', serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(230, 197, 71, 0.1);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--elden-gold);
+  background: linear-gradient(135deg, var(--elden-brown) 0%, var(--elden-dark) 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(230, 197, 71, 0.3),
+    0 0 15px rgba(230, 197, 71, 0.2);
+}
+
+/* Labels */
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--elden-gold);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Grupos de formulário */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Botões */
+.btn {
+  background-color: var(--elden-dark);
+  border: 2px solid var(--elden-gold);
+  color: var(--elden-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 
+    0 8px 25px rgba(230, 197, 71, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, var(--elden-gold-dark) 0%, var(--elden-gold) 50%, var(--elden-gold-light) 100%);
+  color: var(--elden-black);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--elden-gold-dark);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 1rem;
+  background: var(--elden-brown);
+  border: none;
+  color: var(--elden-text);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--elden-gold-dark), var(--elden-gold));
+  color: var(--elden-black);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--elden-gray);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--elden-black);
+  z-index: 1000;
+}
+
+.tab-content.active form {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+  background: var(--elden-dark);
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(230, 197, 71, 0.3);
+}
+
+/* Flexbox utilities */
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+/* Spacing utilities */
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+/* Text utilities */
+.text-center {
+  text-align: center;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Dashboard específico */
+.dashboard-welcome {
+  text-align: center;
+  padding: 2rem;
+}
+
+.dashboard-welcome h2 {
+  color: var(--elden-gold);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* Character creation específico */
+.character-preview {
+  background: linear-gradient(135deg, var(--elden-brown), var(--elden-dark));
+  border: 2px solid var(--elden-gold-dark);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.build-option {
+  background: var(--elden-dark);
+  border: 2px solid var(--elden-gray);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.build-option:hover {
+  border-color: var(--elden-gold);
+  background: var(--elden-brown);
+}
+
+/* Character view específico */
+#character-view-title {
+  font-size: 2.5rem;
+  color: var(--elden-gold);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, var(--elden-dark) 0%, var(--elden-brown) 100%);
+  border: 2px solid var(--elden-gold);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(230, 197, 71, 0.5);
+}
+
+.modal-title {
+  color: var(--elden-gold);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-shadow: 1px 1px 2px var(--elden-shadow);
+}
+
+/* Toast notifications */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, var(--elden-gold-dark), var(--elden-gold));
+  color: var(--elden-black);
+  border-radius: 8px;
+  border: 1px solid var(--elden-gold-light);
+  box-shadow: 0 4px 20px rgba(230, 197, 71, 0.4);
+  z-index: 1000;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Utilidades */
+.hidden {
+  display: none !important;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Animações */
+@keyframes glow-pulse {
+  0%, 100% { 
+    text-shadow: 
+      0 0 5px var(--elden-gold),
+      0 0 10px var(--elden-gold),
+      0 0 15px var(--elden-gold),
+      0 0 20px rgba(230, 197, 71, 0.5),
+      2px 2px 8px var(--elden-shadow);
+  }
+  50% { 
+    text-shadow: 
+      0 0 8px var(--elden-gold),
+      0 0 15px var(--elden-gold),
+      0 0 25px var(--elden-gold),
+      0 0 35px rgba(230, 197, 71, 0.7),
+      2px 2px 8px var(--elden-shadow);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Estilo específico para selects na criação de personagem */
+#create-character-section select {
+  background: var(--elden-gray) !important;
+  color: var(--elden-gold) !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23f2e6c9" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.5rem;
+  border: 2px solid var(--elden-gray);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: 'Almendra', serif;
+  font-size: 1rem;
+  width: 100%;
+}
+
+#create-character-section select::-ms-expand {
+  display: none;
+}
+
+#create-character-section input {
+  background: var(--elden-gray) !important;
+  color: var(--elden-text);
+  border: 2px solid var(--elden-gray);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Almendra', serif;
+  font-size: 1rem;
+  width: 100%;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.3rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+}

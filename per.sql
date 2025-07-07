@@ -7,6 +7,9 @@ CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     login VARCHAR(255) UNIQUE NOT NULL,
     senha VARCHAR(255) NOT NULL
+    ALTER TABLE usuarios ADD COLUMN email VARCHAR(255) UNIQUE;
+    ALTER TABLE usuarios ADD COLUMN confirmation_token VARCHAR(255);
+    ALTER TABLE usuarios ADD COLUMN confirmed BOOLEAN DEFAULT FALSE;
 );
 
 CREATE TABLE personagens (

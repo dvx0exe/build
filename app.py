@@ -3,40 +3,24 @@ from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
 import os
-from flask_bcrypt import Bcrypt
-from functools import wraps
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
-bcrypt = Bcrypt(app)
 
-# Configuração via variáveis de ambiente
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', 'davi123'),
-    'database': os.getenv('DB_NAME', 'personagens_bd')
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'davi123',
+    'database': 'personagens_bd'
 }
 
-# Pool de conexões
-connection_pool = mysql.connector.pooling.MySQLConnectionPool(
-    pool_name="app_pool",
-    pool_size=5,
-    **DB_CONFIG
-)
-
-def db_connection(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        conn = connection_pool.get_connection()
-        try:
-            return f(conn, *args, **kwargs)
-        except Error as e:
-            print(f"Database error: {e}")
-            return jsonify({'message': 'Database error'}), 500
-        finally:
-            conn.close()
-    return decorated
+def get_db_connection():
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        return connection
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+        return None
 
 @app.route('/')
 def index():
@@ -47,142 +31,168 @@ def static_files(path):
     return send_from_directory('.', path)
 
 @app.route('/api/login', methods=['POST'])
-@db_connection
-def login(conn):
+def login():
     data = request.get_json()
-    if not data or 'username' not in data or 'password' not in data:
-        return jsonify({'message': 'Credenciais inválidas'}), 400
+    username = data.get('username')
+    password = data.get('password')
 
-    username = data['username']
-    password = data['password']
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
 
     try:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT id, login, senha FROM usuarios WHERE login = %s", (username,))
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios WHERE login = %s AND senha = %s", (username, password))
         user = cursor.fetchone()
         cursor.close()
+        connection.close()
 
-        if user and bcrypt.check_password_hash(user['senha'], password):
-            return jsonify({
-                'user_id': user['id'],
-                'username': user['login']
-            }), 200
-        return jsonify({'message': 'Credenciais inválidas'}), 401
+        if user:
+            return jsonify({'user_id': user['id'], 'username': user['login']}), 200
+        else:
+            return jsonify({'message': 'Usuário ou senha inválidos!'}), 401
     except Error as e:
-        return jsonify({'message': 'Erro de autenticação'}), 500
+        return jsonify({'message': 'Erro ao fazer login!'}), 500
 
 @app.route('/api/register', methods=['POST'])
-@db_connection
-def register(conn):
+def register():
     data = request.get_json()
-    if not data or 'username' not in data or 'password' not in data:
-        return jsonify({'message': 'Dados incompletos'}), 400
+    username = data.get('username')
+    password = data.get('password')
 
-    username = data['username']
-    password = data['password']
-    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
 
     try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM usuarios WHERE login = %s", (username,))
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM usuarios WHERE login = %s", (username,))
         if cursor.fetchone():
-            return jsonify({'message': 'Usuário já existe'}), 400
+            cursor.close()
+            connection.close()
+            return jsonify({'message': 'Nome de usuário já existe!'}), 400
 
-        cursor.execute(
-            "INSERT INTO usuarios (login, senha) VALUES (%s, %s)",
-            (username, hashed_pw)
-        )
-        conn.commit()
-        return jsonify({'message': 'Registro realizado com sucesso'}), 201
-    except Error as e:
-        conn.rollback()
-        return jsonify({'message': 'Erro no registro'}), 500
-    finally:
+        cursor.execute("INSERT INTO usuarios (login, senha) VALUES (%s, %s)", (username, password))
+        connection.commit()
         cursor.close()
+        connection.close()
+        return jsonify({'message': 'Registro concluído com sucesso!'}), 201
+    except Error as e:
+        return jsonify({'message': 'Erro ao registrar!'}), 500
+
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
+        connection.close()
+
+        if user:
+            return jsonify(user), 200
+        else:
+            return jsonify({'message': 'Usuário não encontrado!'}), 404
+    except Error as e:
+        return jsonify({'message': 'Erro ao buscar usuário!'}), 500
 
 @app.route('/api/characters', methods=['POST'])
-@db_connection
-def create_character(conn):
+def create_character():
     data = request.get_json()
-    required_fields = [
-        'user_id', 'nome', 'idade', 'classe', 'raca', 'sexo', 
-        'vigor', 'mente', 'fortitude', 'forca', 'destreza', 
-        'inteligencia', 'fe', 'arcano', 'build_escolhida'
-    ]
-    
-    if not all(field in data for field in required_fields):
-        return jsonify({'message': 'Dados incompletos'}), 400
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
 
     try:
-        cursor = conn.cursor()
+        cursor = connection.cursor()
         query = """
         INSERT INTO personagens (
-            usuario_id, nome, idade, classe, raca, sexo, vigor, mente, 
-            fortitude, forca, destreza, inteligencia, fe, arcano, 
-            build_escolhida, equipamento, roupas
+            usuario_id, nome, idade, classe, raca, sexo, vigor, mente, fortitude, forca, 
+            destreza, inteligencia, fe, arcano, build_escolhida, equipamento, roupas
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
-            data['user_id'], data['nome'], data['idade'], data['classe'], 
-            data['raca'], data['sexo'], data['vigor'], data['mente'], 
-            data['fortitude'], data['forca'], data['destreza'], 
-            data['inteligencia'], data['fe'], data['arcano'], 
-            data['build_escolhida'],
-            ','.join(data.get('equipamento', [])),
-            ','.join(data.get('roupas', []))
+            data['user_id'], data['nome'], data['idade'], data['classe'], data['raca'], data['sexo'],
+            data['vigor'], data['mente'], data['fortitude'], data['forca'], data['destreza'],
+            data['inteligencia'], data['fe'], data['arcano'], data['build_escolhida'],
+            ','.join(data['equipamento']), ','.join(data['roupas'])
         )
         cursor.execute(query, values)
-        conn.commit()
-        return jsonify({
-            'message': 'Personagem criado com sucesso',
-            'id': cursor.lastrowid
-        }), 201
-    except Error as e:
-        conn.rollback()
-        return jsonify({'message': 'Erro ao criar personagem'}), 500
-    finally:
+        connection.commit()
         cursor.close()
+        connection.close()
+        return jsonify({'message': 'Personagem criado com sucesso!'}), 201
+    except Error as e:
+        return jsonify({'message': 'Erro ao criar personagem!'}), 500
 
 @app.route('/api/characters', methods=['GET'])
-@db_connection
-def get_characters(conn):
+def get_characters():
     user_id = request.args.get('user_id')
-    if not user_id or not user_id.isdigit():
-        return jsonify({'message': 'ID de usuário inválido'}), 400
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
 
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM personagens WHERE usuario_id = %s", (user_id,))
         characters = cursor.fetchall()
-        
+        cursor.close()
+        connection.close()
+
         for char in characters:
-            for field in ['equipamento', 'roupas']:
-                if char[field]:
-                    char[field] = char[field].split(',')
-        
+            char['equipamento'] = char['equipamento'].split(',') if char['equipamento'] else []
+            char['roupas'] = char['roupas'].split(',') if char['roupas'] else []
         return jsonify(characters), 200
     except Error as e:
-        return jsonify({'message': 'Erro ao buscar personagens'}), 500
-    finally:
+        return jsonify({'message': 'Erro ao buscar personagens!'}), 500
+
+@app.route('/api/characters/<int:id>', methods=['GET'])
+def get_character(id):
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM personagens WHERE id = %s", (id,))
+        character = cursor.fetchone()
         cursor.close()
+        connection.close()
+
+        if character:
+            character['equipamento'] = character['equipamento'].split(',') if character['equipamento'] else []
+            character['roupas'] = character['roupas'].split(',') if character['roupas'] else []
+            return jsonify(character), 200
+        else:
+            return jsonify({'message': 'Personagem não encontrado!'}), 404
+    except Error as e:
+        return jsonify({'message': 'Erro ao buscar personagem!'}), 500
 
 @app.route('/api/characters/<int:id>', methods=['DELETE'])
-@db_connection
-def delete_character(conn, id):
+def delete_character(id):
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({'message': 'Database connection failed'}), 500
+
     try:
-        cursor = conn.cursor()
+        cursor = connection.cursor()
         cursor.execute("DELETE FROM personagens WHERE id = %s", (id,))
-        
-        if cursor.rowcount == 0:
-            return jsonify({'message': 'Personagem não encontrado'}), 404
-            
-        conn.commit()
-        return jsonify({'message': 'Personagem excluído com sucesso'}), 200
+        if cursor.rowcount > 0:
+            connection.commit()
+            cursor.close()
+            connection.close()
+            return jsonify({'message': 'Personagem excluído com sucesso!'}), 200
+        else:
+            cursor.close()
+            connection.close()
+            return jsonify({'message': 'Personagem não encontrado!'}), 404
     except Error as e:
-        conn.rollback()
-        return jsonify({'message': 'Erro ao excluir personagem'}), 500
-    finally:
-        cursor.close()
+        return jsonify({'message': 'Erro ao excluir personagem!'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('FLASK_DEBUG', 'False') == 'True')
+    app.run(debug=True)
+    

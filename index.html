@@ -12,7 +12,8 @@
     <meta property="og:type" content="website" />
 
     <link rel="stylesheet" href="styles.css">
-    <script scr="https://acconts.google.com/gsi/client" async defer></script>
+    <!-- Correção da URL do script do Google -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="container">
@@ -22,35 +23,35 @@
         </header>
 
         <section id="auth-section" class="section">
+            <!-- Removida div extra de fechamento -->
             <div id="g_id_onload"
             data-client_id="387167873726-pbi9k6o21c6jr5sqjvfbmqeaf742ld51.apps.googleusercontent.com"
             data-login_uri="https://your.domain/your_login_endpoint"
             data-auto_prompt="false">
-        </div>
-        <div class="g_id_signin"
-            data-type="standard"
-            data-size="large"
-            data-theme="outline"
-            data-text="sign_in_with"
-            data-shape="rectangular"
-            data-logo_alignment="left">
             </div>
-                </div>
+            <div class="g_id_signin"
+                data-type="standard"
+                data-size="large"
+                data-theme="outline"
+                data-text="sign_in_with"
+                data-shape="rectangular"
+                data-logo_alignment="left">
+            </div>
 
-                <div id="register-form" class="tab-content">
-                    <h3 class="content">Registrar</h3>
-                    <form id="register-form-element">
-                        <div class="form-group">
-                            <label for="register-username" class="content">Usuário:</label>
-                            <input type="text" id="register-username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-password" class="content">Senha:</label>
-                            <input type="password" id="register-password" required>
-                        </div>
-                        <button type="submit" class="btn">Registrar</button>
-                    </form>
-                </div>
+            <!-- Corrigida estrutura do formulário de registro -->
+            <div id="register-form" class="tab-content">
+                <h3 class="content">Registrar</h3>
+                <form id="register-form-element">
+                    <div class="form-group">
+                        <label for="register-username" class="content">Usuário:</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password" class="content">Senha:</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <button type="submit" class="btn">Registrar</button>
+                </form>
             </div>
         </section>
 
@@ -101,7 +102,8 @@
                                 <option value="" disabled selected>Escolha o sexo</option>
                                 <option value="Masculino">Masculino</option>
                                 <option value="Feminino">Feminino</option>
-                                <option value="croissant">croissant</option>
+                                <!-- Corrigido valor incorreto -->
+                                <option value="Outro">Outro</option>
                             </select>
                         </div>
                     </div>
@@ -140,7 +142,8 @@
 
                 <div class="form-actions">
                     <button type="button" id="back-btn" class="btn btn-secondary">Voltar</button>
-
+                    <!-- Adicionado botão de envio faltante -->
+                    <button type="submit" form="character-form" class="btn btn-primary">Criar Personagem</button>
                 </div>
             </div>
         </section>
@@ -153,6 +156,7 @@
                 <button id="delete-character-btn" class="btn btn-danger">Excluir</button>
             </div>
         </section>
+        
         <div id="delete-modal" class="modal hidden">
             <div class="modal-content">
                 <h3 class="modal-title">Excluir Personagem</h3>

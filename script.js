@@ -290,7 +290,6 @@ const classBuilds = {
         }
     ]
 };
-
 // Referências aos elementos do DOM
 const authSection = document.getElementById('auth-section');
 const dashboardSection = document.getElementById('dashboard-section');
@@ -512,69 +511,32 @@ function handleClassChange() {
     const selectedClass = document.getElementById('character-class').value;
     
     clearElement(buildButtonsContainer);
+    clearElement(buildDescription);
     document.getElementById('character-build').value = '';
 
     if (selectedClass && classBuilds[selectedClass]) {
         buildOptions.classList.remove('hidden');
 
-        // Limpar descrição anterior
-        clearElement(buildDescription);
-
-        // Criar container para descrições formatadas
-        const buildsListContainer = document.createElement('div');
-        buildsListContainer.className = 'builds-list-container';
-        
         classBuilds[selectedClass].forEach((build, index) => {
-            // Criar botão para build
-            const buildBtn = document.createElement('div');
-            buildBtn.className = 'build-btn';
+            const buildBtn = document.createElement('button');
+            buildBtn.className = 'btn build-btn';
             buildBtn.dataset.buildIndex = index;
-            
-            const statsText = Object.entries(build.statChanges)
-                .map(([stat, value]) => `${statNameToDisplay(stat)} +${value}`)
-                .join(', ');
-            
-            const equipmentText = build.equipment ? build.equipment.join(', ') : '';
-            
+            buildBtn.innerHTML = `
+                <span class="build-btn-title">${build.name}</span>
+                <div class="build-btn-description">${build.description}</div>
+            `;
             
             buildBtn.addEventListener('click', () => {
-                // Remove seleção anterior
                 document.querySelectorAll('.build-btn').forEach(btn => {
                     btn.classList.remove('selected');
                 });
-                // Adiciona seleção atual
                 buildBtn.classList.add('selected');
-                // Atualiza campo hidden
                 document.getElementById('character-build').value = index;
-                // Atualiza preview
                 updateCharacterPreview(selectedClass, index);
             });
             
             buildButtonsContainer.appendChild(buildBtn);
-
-            // Adiciona a descrição textual formatada ao container
-            const buildDescItem = document.createElement('div');
-            buildDescItem.className = 'build-description-item';
-            buildDescItem.innerHTML = `
-                <div class="build-desc-header">
-                    <span class="build-number">${index + 1}</span>
-                    <span class="build-name">${build.name}</span>
-                </div>
-                <div class="build-desc-content">
-                    <div><strong>Descrição:</strong> ${build.description}</div>
-                    <div><strong>Atributos recomendados:</strong> ${statsText}</div>
-                    ${build.equipment && build.equipment.length ? 
-                        `<div><strong>Equipamentos:</strong> ${build.equipment.join(', ')}</div>` : ''}
-                    ${build.clothes && build.clothes.length ? 
-                        `<div><strong>Roupas:</strong> ${build.clothes.join(', ')}</div>` : ''}
-                </div>
-                <div class="build-desc-separator"></div>
-            `;
-            buildsListContainer.appendChild(buildDescItem);
         });
-
-        // Adiciona todas as descrições ao elemento buildDescription
-        buildDescription.appendChild(buildsListContainer);
         
         updateCharacterPreview(selectedClass);
     } else {
@@ -691,28 +653,27 @@ function viewCharacter(id) {
     document.getElementById('character-view-title').textContent = `${character.name}`;
     clearElement(characterDetails);
 
-      // Informações Básicas (CENTRALIZADO)
-      const basicInfo = document.createElement('div');
-      basicInfo.className = 'detail-group';
-      basicInfo.innerHTML = `
-          <h4>Informações Básicas</h4>
-          <div class="detail-grid">
-          <div class="detail-item">Classe: ${character.class}</div>
-          <div class="detail-item">Raça: ${character.race}</div>
-          <div class="detail-item">Sexo: ${character.sex}</div>
-          <div class="detail-item">Idade: ${character.age}</div>
-          ${character.build ? `<div class="detail-item">Build: ${character.build}</div>` : ''}
-          </div>
-      `;
-      characterDetails.appendChild(basicInfo);
+    // Informações Básicas
+    const basicInfo = document.createElement('div');
+    basicInfo.className = 'detail-group';
+    basicInfo.innerHTML = `
+        <h4>Informações Básicas</h4>
+        <div class="detail-grid">
+            <div class="detail-item">Classe: ${character.class}</div>
+            <div class="detail-item">Raça: ${character.race}</div>
+            <div class="detail-item">Sexo: ${character.sex}</div>
+            <div class="detail-item">Idade: ${character.age}</div>
+            ${character.build ? `<div class="detail-item">Build: ${character.build}</div>` : ''}
+        </div>
+    `;
+    characterDetails.appendChild(basicInfo);
 
-      // Estatísticas (CENTRALIZADO)
-      const stats = document.createElement('div');
-      stats.className = 'detail-group';
-      stats.innerHTML = '<h4>Atributos</h4>';
-      const statsGrid = document.createElement('div');
-      statsGrid.className = 'stats-grid';
-
+    // Estatísticas
+    const stats = document.createElement('div');
+    stats.className = 'detail-group';
+    stats.innerHTML = '<h4>Atributos</h4>';
+    const statsGrid = document.createElement('div');
+    statsGrid.className = 'stats-grid';
 
     Object.entries(character.stats).forEach(([stat, value]) => {
         const statBox = document.createElement('div');
@@ -815,7 +776,6 @@ document.addEventListener('DOMContentLoaded', () => {
         navigateTo(createCharacterSection);
     });
 
-
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
 
     document.getElementById('character-class').addEventListener('change', handleClassChange);
@@ -844,135 +804,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-
-function handleClassChange() {
-    const selectedClass = document.getElementById('character-class').value;
-    
-    // Limpar descrições anteriores
-    clearElement(buildDescription);
-    document.getElementById('character-build').value = '';
-    if (selectedClass && classBuilds[selectedClass]) {
-        buildOptions.classList.remove('hidden');
-        // Criar container para descrições
-        const buildsListContainer = document.createElement('div');
-        buildsListContainer.classburgo = document.createElement('div');
-        buildsListContainer.className = 'builds-list-container';
-        
-        classBuilds[selectedClass].forEach((build, index) => {
-            // Criar item de descrição
-            const buildDescItem = document.createElement('div');
-            buildDescItem.className = 'build-description-item';
-            buildDescItem.dataset.buildIndex = index;
-            
-            const statsText = Object.entries(build.statChanges)
-                .map(([stat, value]) => `${statNameToDisplay(stat)} +${value}`)
-                .join(', ');
-            
-            const equipmentText = build.equipment ? build.equipment.join(', ') : '';
-            
-            buildDescItem.innerHTML = `
-                <div class="build-desc-header">
-                    <span class="build-number">${index + 1}</span>
-                    <span class="build-name">${build.name}</span>
-                </div>
-                <div class="build-desc-content">
-                    <div><strong>Descrição:</strong> ${build.description}</div>
-                    <div><strong>Atributos recomendados:</strong> ${statsText}</div>
-                    ${build.equipment && build.equipment.length ? 
-                        `<div><strong>Equipamentos:</strong> ${build.equipment.join(', ')}</div>` : ''}
-                    ${build.clothes && build.clothes.length ? 
-                        `<div><strong>Roupas:</strong> ${build.clothes.join(', ')}</div>` : ''}
-                </div>
-                <div class="build-desc-separator"></div>
-            `;
-            
-            // Adicionar evento de clique
-            buildDescItem.addEventListener('click', () => {
-                // Remover seleção anterior
-                document.querySelectorAll('.build-description-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                // Adicionar seleção atual
-                buildDescItem.classList.add('selected');
-                // Atualizar campo oculto
-                document.getElementById('character-build').value = index;
-                // Atualizar preview
-                updateCharacterPreview(selectedClass, index);
-            });
-            
-            buildsListContainer.appendChild(buildDescItem);
-        });
-        
-        // Adicionar todas as descrições ao buildDescription
-        buildDescription.appendChild(buildsListContainer);
-        
-        updateCharacterPreview(selectedClass);
-    } else {
-        buildOptions.classList.add('hidden');
-        clearElement(characterStats);
-    }
-}
-
-// Gerencia mudança de classe do personagem
-function handleClassChange() {
-    const selectedClass = document.getElementById('character-class').value;
-
-    clearElement(buildButtonsContainer);
-    clearElement(buildDescription); // Optional: keep if used elsewhere
-    document.getElementById('character-build').value = '';
-
-    if (selectedClass && classBuilds[selectedClass]) {
-        buildOptions.classList.remove('hidden');
-
-        classBuilds[selectedClass].forEach((build, index) => {
-            const buildBtn = document.createElement('button');
-            buildBtn.className = 'btn build-btn';
-            buildBtn.dataset.buildIndex = index;
-
-            // Create a container for the button content
-            const btnContent = document.createElement('div');
-            btnContent.className = 'build-btn-content';
-
-            // Button title
-            const btnTitle = document.createElement('span');
-            btnTitle.className = 'build-btn-title';
-            btnTitle.textContent = build.name;
-
-            // Description content
-            const descContent = document.createElement('div');
-            descContent.className = 'build-btn-description';
-            descContent.innerHTML = `
-                <div><strong>Descrição:</strong> ${build.description}</div>
-                <div><strong>Atributos recomendados:</strong> ${Object.entries(build.statChanges).map(([stat, value]) => `${statNameToDisplay(stat)} +${value}`).join(', ')}</div>
-                ${build.equipment && build.equipment.length ? `<div><strong>Equipamentos:</strong> ${build.equipment.join(', ')}</div>` : ''}
-                ${build.clothes && build.clothes.length ? `<div><strong>Roupas:</strong> ${build.clothes.join(', ')}</div>` : ''}
-            `;
-
-            // Append title and description to the button content
-            btnContent.appendChild(btnTitle);
-            btnContent.appendChild(descContent);
-
-            // Append content to the button
-            buildBtn.appendChild(btnContent);
-
-            buildBtn.addEventListener('click', () => {
-                document.querySelectorAll('.build-btn').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                buildBtn.classList.add('selected');
-                document.getElementById('character-build').value = index;
-                updateCharacterPreview(selectedClass, index);
-            });
-
-            buildButtonsContainer.appendChild(buildBtn);
-        });
-
-        updateCharacterPreview(selectedClass);
-    } else {
-        buildOptions.classList.add('hidden');
-        clearElement(characterStats);
-    }
-}
-
-
- // Equipamentos
